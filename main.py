@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-import numpy, StringIO, base64, glitch
+import numpy, StringIO, base64, glitch, sys
 from PIL import Image
 
 app = Flask(__name__)
@@ -10,15 +10,26 @@ def hello_world():
         json = request.get_json(force=True)
         data = json["content"]["data"].split(";")
         try:
-            image = Image.open(StringIO.StringIO(base64.b64decode(data[1])))
+            image = Image.open(StringIO.StringIO(base64.b64decode(data[1].split(",")[1])))
+            print image
         except:
             return jsonify(json)
         image = image.convert("RGB")
-        array_image = numpy.asarray(img)
+        array_image = numpy.asarray(image)
         array_image.flags.writeable = True
         glitched_image = glitch.main(array_image)
-        out_image = Image.fromarray(glitched_image)
+        try:
+            out_image = Image.fromarray(glitched_image)
+        except:
+            return jsonify(json)
+        try:
+            b64blob = base64.b64encode(out_image.tostring())
+        except:
+            print sys.exc_info()[:]
         # re-jsonify and return here
+        out = {"content": { "data" : "data:image/jpeg;base64,"+b64blob},
+               "meta" : {}}
+        return jsonify(**out)
     else:
         return "this is where my revist server lives"
 
