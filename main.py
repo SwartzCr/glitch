@@ -22,8 +22,10 @@ def hello_world():
             out_image = Image.fromarray(glitched_image)
         except:
             return jsonify(json)
+        sio = StringIO.StringIO()
+        out_image.save(sio, "JPEG", quality=100)
         try:
-            b64blob = base64.b64encode(out_image.tostring())
+            b64blob = base64.b64encode(sio.getvalue())
         except:
             print sys.exc_info()[:]
         # re-jsonify and return here
