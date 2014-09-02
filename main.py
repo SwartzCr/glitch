@@ -4,8 +4,12 @@ from PIL import Image
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET','POST'])
-def hello_world():
+@app.route('/', methods=['GET'])
+def central():
+    return "service is up!"
+
+@app.route('/service', methods=['POST'])
+def glitch():
     if request.method == 'POST':
         json = request.get_json(force=True)
         data = json["content"]["data"].split(";")
@@ -24,10 +28,7 @@ def hello_world():
             return jsonify(json)
         sio = StringIO.StringIO()
         out_image.save(sio, "JPEG", quality=100)
-        try:
-            b64blob = base64.b64encode(sio.getvalue())
-        except:
-            print sys.exc_info()[:]
+        b64blob = base64.b64encode(sio.getvalue())
         # re-jsonify and return here
         out = {"content": { "data" : "data:image/jpeg;base64,"+b64blob},
                "meta" : {}}
